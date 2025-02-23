@@ -1,24 +1,23 @@
+import moment from 'moment'
+import simpleGit from 'simple-git'
 import random from 'random'
 import jsonfile from 'jsonfile'
-import moment from 'moment'
-import simpleGit from 'simple-git/promise'
 
 const FILE_PATH = './data.json'
-const git = simpleGit()
 
-const makeCommit = async () => {
-    const DATE = moment().subtract(1, 'd').format()
-    const data = { date: DATE }
+const makeCommit = n => {
+    if (n === 0) return simpleGit().push()
+    const x = random.int(0, 54)
+    const y = random.int(0, 6)
+    const DATE = moment().subtract(1, 'y').add(1, 'd').add(x, 'w').add(y, 'd').format()
 
-    try {
-        await jsonfile.writeFile(FILE_PATH, data)
-        await git.add([FILE_PATH])
-        await git.commit(DATE, { '--date': DATE })
-        await git.push()
-        console.log('Commit and push successful')
-    } catch (error) {
-        console.error('Error during commit and push:', error)
+    const data = {
+        date: DATE
     }
+    console.log(DATE)
+    jsonfile.writeFile(FILE_PATH, data, () => {
+        simpleGit().add([FILE_PATH]).commit(DATE, { '--date': DATE }, makeCommit.bind(this, --n))
+    })
 }
 
-makeCommit()
+makeCommit(500)
